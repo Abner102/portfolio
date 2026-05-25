@@ -2,8 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const port = process.env.PORT || 5173;
-const host = process.env.HOST || '0.0.0.0';
+const port = Number(process.env.PORT) || 5173;
+const host = '0.0.0.0';
 const root = __dirname;
 
 const mimeTypes = {
@@ -37,10 +37,18 @@ function sendFile(response, filePath) {
 
 const server = http.createServer((request, response) => {
   const urlPath = decodeURIComponent(request.url.split('?')[0]);
-  const requestedPath = urlPath === '/' ? '/index.html' : urlPath;
-  const filePath = path.normalize(path.join(root, requestedPath));
 
-  if (!filePath.startsWith(root)) {
+  if (urlPath === '/healthz') {
+    response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('ok');
+    return;
+  }
+
+  const requestedPath = urlPath === '/' ? '/index.html' : urlPath;
+  const filePath = path.resolve(root, `.${requestedPath}`);
+  const relativePath = path.relative(root, filePath);
+
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
     response.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
     response.end('Forbidden');
     return;
@@ -49,7 +57,12 @@ const server = http.createServer((request, response) => {
   sendFile(response, filePath);
 });
 
+server.on('error', (error) => {
+  console.error(`Failed to start server on ${host}:${port}`);
+  console.error(error);
+  process.exit(1);
+});
+
 server.listen(port, host, () => {
   console.log(`Portfolio website running at http://${host}:${port}`);
-  console.log('Keep this terminal open. Press Ctrl + C to stop the server.');
 });
