@@ -5,6 +5,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const toast = document.getElementById('toast');
   let toastTimeout;
 
+  // Birthday countdown functionality
+  function updateCountdown() {
+    const birthdayDate = new Date('June 14, 2026 00:00:00').getTime();
+    const now = new Date().getTime();
+    const distance = birthdayDate - now;
+
+    if (distance < 0) {
+      // Birthday has arrived
+      document.getElementById('daysRemaining').textContent = '0';
+      document.getElementById('hoursRemaining').textContent = '0';
+      document.getElementById('minutesRemaining').textContent = '0';
+      document.getElementById('secondsRemaining').textContent = '0';
+      return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    document.getElementById('daysRemaining').textContent = days;
+    document.getElementById('hoursRemaining').textContent = hours;
+    document.getElementById('minutesRemaining').textContent = minutes;
+    document.getElementById('secondsRemaining').textContent = seconds;
+  }
+
+  // Initialize countdown and update every second
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
   function setMenu(open) {
     siteNav?.classList.toggle('open', open);
     menuToggle?.classList.toggle('active', open);
